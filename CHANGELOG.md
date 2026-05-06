@@ -1,3 +1,53 @@
+# CrazyBebop — 2025-07-16 build (May 6, 2026)
+
+> **Hotfix on a discontinued patch — not supported.** LGN active development is on FORGE. WARP0716 is not receiving ongoing maintenance; this is a drop-in fix for community users still running WARP0716.
+>
+> **Lua-only — no re-WARP needed.** Drop the new `PCFuncs.lua` and `PCIds.lua` (and optionally `PCNames.lua`) into `data/luafiles514/lua files/JobInfo/`, overwriting existing. Lua data files are loaded at runtime, not baked into the exe.
+
+## May 6 Hotfix
+
+### Mounted classes — Job name no longer shows "Poring"
+Players on a peco / dragon / mado / wolf / gryphon mount were seeing **"Poring"** as their class in the BasicInfo window, character select, and party UI — Lord Knight, Paladin, Rune Knight, Royal Guard, Mechanic, Ranger, Dragon Knight, and other 4th-class jobs all affected.
+
+Cause: the stock client uses *2 mounted variant IDs (e.g. `LORD_KNIGHT 4008` → `LORD_KNIGHT2 4014`) for the actor's effective class while mounted, and the GRF-loaded job name table only populates the **base** IDs. When the client looked up `PCNames[4014]`, the entry was missing and the lookup fell through to a hardcoded "Poring" fallback.
+
+Fixed by adding a second auto-populate pass in `PCFuncs.lua` that copies each base class name onto its mounted variant(s). The mapping was extracted from the client's mounted-job lookup function (`CMode::GetJobClassID` at 0x00d5b580) — covers all stock peco mounts, Rune Knight's five dragon colors, Mechanic's mado gear, Royal Guard's gryphon, Ranger's wolf, and the 4th-class mount IDs. User overrides in `PCNames` still win — the pass only fills entries that are currently nil.
+
+### Stock job constants now usable as `PCIds.NAME`
+Previously, only your custom job IDs were defined in `PCIds.lua` — stock constants like `PCIds.LORD_KNIGHT2`, `PCIds.PALADIN2`, `PCIds.WARLOCK`, etc. evaluated to `nil`. Writing `PCNames[PCIds.LORD_KNIGHT2] = "Holy Knight"` was a silent no-op; you had to use the raw numeric ID (`PCNames[4014] = "Holy Knight"`) instead.
+
+The shipped `PCIds.lua` now includes a `do…end` block at the top that pre-defines ~170 stock constants (NOVICE through 4th-class jobs and their mounts) before your custom IDs are added. After this, both forms work:
+
+```
+PCNames[PCIds.LORD_KNIGHT2] = "Holy Knight"   -- by name
+PCNames[4014]               = "Holy Knight"   -- by raw ID (same thing)
+```
+
+Aliases are included for both rAthena naming (`LORD_KNIGHT2`, `RUNE_KNIGHT_T`) and legacy WARP naming (`LORD_MOUNT`, `RUNE_KNIGHT_H`) — pick whichever convention you prefer. Add your custom IDs after the **ADD CUSTOM JOBS BELOW** marker line.
+
+The previous comment "Stock job IDs are loaded from GRF" was a misconception — the GRF only loads stock *names* (via `PCJobNameTable`), not the Lua-side constant table. Header comments updated to match reality.
+
+### `JOB_SKILL_TIER` now actually applies to custom job chains
+Multi-tier custom job chains (Base → 2nd → 3rd) declared via `JOB_SKILL_TIER` in `PCIds.lua` were silently collapsing onto a single skill-tree tab. The `InitSkillTreeView` wrapper that reads `JOB_SKILL_TIER` at runtime had been missing from the WARP `Inputs/` source — never committed back from a deployed environment. Now included in `PCFuncs.lua` as the canonical source.
+
+### PCNames.lua header refreshed (optional)
+The shipped `PCNames.lua` header now shows both `PCNames[PCIds.X]` and `PCNames[4014]` examples for renaming stock jobs. Cosmetic only — your existing `PCNames.lua` keeps working as-is. Skip this file unless you want the updated examples.
+
+### Custom Jobs guide — significant additions
+[Online guide](https://legacygamers.net/docs/public/customjobs-reforged/) updated with new sections:
+- **Stock PCIds auto-populate** callout under PCIds.lua, plus PCNames examples now show both `PCIds.X` and raw-ID forms side-by-side
+- **Gender-specific names** — `PCNames_M` / `PCNames_F` for male/female overrides (the stock Bard/Dancer convention)
+- **Multi-language names** — `LT_<N>` per-language sub-tables; works on every lookup table, not just PCNames
+- **Inheritance Tables** — `PCNameInheritTbl` / `PCPathInheritTbl` / etc. for tier-style fallback chains, with the matching `MapPC*` resolver functions
+- **`JT_` vs `JOB_`** naming-convention callout (skillinfoz `JOBID.JT_NAME` vs server-side `JOB_NAME`)
+- **Mount Support** rewritten — stock mounts work automatically (no PCIds setup needed), custom mount riding IDs need their own entries across all five lookup tables (PCPaths / PCNames / PCPals / PCHands / PCImfs)
+- Step 1 warning expanded to mention the Phase 5 4345 floor and the `convert_job_to_trans_or_baby` sprite-mangling path
+
+### To install
+Replace `data/luafiles514/lua files/JobInfo/PCFuncs.lua` and `PCIds.lua` (and optionally `PCNames.lua`) in your client's data folder with the new copies. No re-WARP, no exe changes — Lua files are runtime-loaded.
+
+---
+
 # CrazyBebop — 2025-07-16 build (Apr 21, 2026)
 
 > **Aftermarket patch — not supported.** LGN active development is on FORGE. WARP0716 is not receiving ongoing maintenance; this is a drop-in fix for community users still running WARP0716.
