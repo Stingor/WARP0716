@@ -256,6 +256,24 @@ Halter_Table[PCIds.EXAMPLE_JOB] = PCMounts.EXAMPLE_JOB_RIDING</code></pre>
   <tr><td><code>PCImfs.lua</code></td><td><code>PCImfs[PCMounts.EXAMPLE_JOB_RIDING] = (PCImfs[PCIds.NOVICE] or "")</code></td></tr>
 </table>
 <p>Plus the actual asset files for the riding variant: body <code>.spr</code>/<code>.act</code>, <code>costume_1/</code> <code>.spr</code>/<code>.act</code>, IMF (male + female), and icon BMP (<code>icon_jobs_<em>RIDING_ID</em>.bmp</code> + <code>_die.bmp</code>) &mdash; all the same artifacts a base custom job needs (Steps 3-5). If you support multiple mount types (like Rune Knight's five dragon colors), each gets its own ID and full entry set, and <code>Halter_Table</code> can map the same base job to multiple mounts via additional Lua logic.</p>
+
+<h3>Doram Race</h3>
+<div class="callout callout-info">
+  <strong>Stock Doram works automatically:</strong> Summoner and Mystic Summoner are hardcoded into the client's race check. This section only applies to <strong>custom</strong> jobs that should render as Doram instead of Human.
+</div>
+<p>The client routes sprite/offset/scale/nameplate lookups through <code>is_doram_job_id</code>, which by default only knows the stock Summoner IDs. The CustomJobs <strong>Phase 13</strong> patch adds a Lua-table override so any custom job can opt in. Define <code>PCRace</code> in any JobInfo Lua file:</p>
+<div class="code-label">PCIds.lua (or PCNames.lua / a new PCRace.lua)</div>
+<pre><code>PCRace = PCRace or {}
+PCRace[PCIds.MY_DORAM_NOVICE] = "doram"
+PCRace[PCIds.MY_DORAM_2NDCLASS] = "doram"</code></pre>
+<p>Any non-nil value enables the Doram path; <code>"doram"</code> reads well and reserves room for future race values. Once set, the job's body sprite loads from <code>data/sprite/도람족/몸통/</code> (CP949 <code>µµ¶÷Á·/¸öÅë/</code>) instead of <code>인간족/몸통/</code>, and item offsets, sprite scale, shadow position, and nameplate Y-offset all follow the Doram code paths the stock Summoner uses.</p>
+<p>Your sprite files for Doram custom jobs go in the Doram folder, <em>not</em> the human folder shown in Step 3:</p>
+<table>
+  <tr><th>File</th><th>Client Path</th></tr>
+  <tr><td>Male base sprite</td><td><code>data/sprite/µµ¶÷Á·/¸öÅë/³²/<em>EXAMPLE_DORAM</em>_³².spr</code></td></tr>
+  <tr><td>Female base sprite</td><td><code>data/sprite/µµ¶÷Á·/¸öÅë/¿©/<em>EXAMPLE_DORAM</em>_¿©.spr</code></td></tr>
+</table>
+<p>(Same <code>.act</code>, <code>costume_1/</code>, IMF, palette, and icon rules as Step 3 &mdash; just with <code>µµ¶÷Á·</code> instead of <code>ÀÎ°£Á·</code> for the body sprites.)</p>
 </div>
 
 <!-- ══════════════════ STEP 3 ══════════════════ -->
@@ -609,7 +627,7 @@ export_constant2("EAJ_EXAMPLE_JOB",MAPID_EXAMPLE_JOB);</code></pre>
 <footer>
   <span class="footer-brand"><a href="https://github.com/CrazyBebop/WARP0716" style="color:inherit;text-decoration:none">WARP 07-16</a></span>
   <span>Custom Jobs Guide &mdash; <a href="https://github.com/CrazyBebop" style="color:var(--gold-dim);text-decoration:none">CrazyBebop</a></span>
-  <span>Last updated <time datetime="2026-05-06">2026-05-06</time></span>
+  <span>Last updated <time datetime="2026-05-15">2026-05-15</time></span>
   <span>Powered by <a href="https://legacygamers.net" style="color:var(--gold-dim);text-decoration:none">LegacyGamers Network</a></span>
 </footer>
 

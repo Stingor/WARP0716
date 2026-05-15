@@ -1,3 +1,38 @@
+# CrazyBebop — 2025-07-16 build (May 15, 2026)
+
+> **Hotfix on a discontinued patch — not supported.** LGN active development is on FORGE. WARP0716 is not receiving ongoing maintenance; this is a drop-in fix for community users still running WARP0716.
+>
+> **Binary patch — re-WARP required.** Unlike the May 6 / Apr 21 hotfixes, this one changes the `CustomJobs` patch itself, not just Lua data. You must re-apply the WARP patch with the updated `CustomJobs.qjs` for it to take effect — dropping new Lua files alone will **not** enable it.
+
+## May 15 Update
+
+### Custom jobs can now use the Doram race
+
+Custom jobs intended to render as Doram (e.g. a job pointing `PCPaths` at `"summoner"`) were always drawn with the **Human** body — Doram body sprites loaded human heads, offsets, scale, and nameplate positions were wrong. ([GitHub #27](https://github.com/CrazyBebop/WARP0716/issues/27))
+
+Cause: the client decides Human vs Doram by calling an internal `is_doram_job_id` check that is hardcoded to the **stock Summoner / Mystic Summoner IDs only**. Custom job IDs are never in that set, so they always took the Human sprite path — and the same check gates ~40 other behaviors (item offsets, sprite scale, shadow position, nameplate Y-offset, the item layer renderer, character select/create, the styling shop, skill-effect positioning).
+
+Fixed with a new **`CustomJobs` Phase 13** patch that hooks the tail of that check and consults a Lua table, `PCRace`. Set an entry and the job follows the Doram code paths the stock Summoner uses. Define it in any JobInfo Lua file (e.g. `PCIds.lua` or a new `PCRace.lua`):
+
+```
+PCRace = PCRace or {}
+PCRace[PCIds.MY_DORAM_NOVICE] = "doram"
+```
+
+Any non-nil value enables it; `"doram"` reads well and reserves room for future race values. Stock Summoner / Mystic Summoner are unaffected — the original check still runs first and short-circuits for them, so there is zero behavior change for non-custom jobs.
+
+Doram custom-job body sprites go in the Doram folder, not the Human one: `data/sprite/도람족/몸통/…` (CP949 `µµ¶÷Á·\¸öÅë\…`) instead of `인간족/몸통/`. Everything else (`.act`, `costume_1/`, IMF, palette, icon) follows the same rules as a normal custom job.
+
+Thanks to pepeuprog for reporting it.
+
+### Custom Jobs guide — new "Doram Race" section
+[Online guide](https://legacygamers.net/docs/public/customjobs-reforged/) gained a **Doram Race** subsection under Step 2 documenting the `PCRace` API and the Doram sprite paths.
+
+### To install
+Re-apply the WARP patch using the updated `CustomJobs.qjs` from this repo, then add your `PCRace` entries to a JobInfo Lua file. Because this is a binary change, the Lua-only install path used by the May 6 / Apr 21 hotfixes does **not** apply here — you must re-WARP.
+
+---
+
 # CrazyBebop — 2025-07-16 build (May 6, 2026)
 
 > **Hotfix on a discontinued patch — not supported.** LGN active development is on FORGE. WARP0716 is not receiving ongoing maintenance; this is a drop-in fix for community users still running WARP0716.
