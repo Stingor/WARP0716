@@ -121,7 +121,13 @@ CustomUI:
             recommend : no
             author : 4144,Skylove
             desc : Raises the maximum number of items that can be added through cash inventory expansion from the default 100 up to 999,999. Server-side adjustment may be required to match.
-            
+
+        - BiggerInventoryWindow:
+            title : Bigger inventory window
+            recommend : no
+            author : Stingor
+            desc : Raises the maximum size the inventory window can be resized to. The stock client clamps the drag-resize to 320x240; this lets you set a larger maximum (default 1280x1024) so you can drag the inventory much bigger and see many more item slots at once. The window background is tiled, so it renders correctly at any size. This changes only the window SIZE, not the item CAPACITY (use 'Custom inventory limit' for that).
+
         - DeleteCharWithEmail:
             title : Always use email for Char Deletion
             recommend : no
